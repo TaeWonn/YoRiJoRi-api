@@ -4,6 +4,6 @@ RUN mkdir /app
 
 WORKDIR /app
 
-COPY . ./build/lib/yorijori-api-0.0.1-SNAPSHOT.jar
+COPY ./build/lib/yorijori-api-0.0.1-SNAPSHOT.jar .
 
-CMD ["java", "-jar", "yorijori-api-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "*.jar"]
