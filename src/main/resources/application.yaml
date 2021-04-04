@@ -1,10 +1,16 @@
 spring:
+
+    profiles:
+        include:
+            - aws
+            - credentials
     # DataSource Configuration
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://yorijori-db.cdxp4ultx56n.ap-northeast-2.rds.amazonaws.com:3306/ohjj
         username: yorijori
         password: yorijori-rds
+
     # JPA Configuration
     jpa:
         database: mysql
@@ -12,3 +18,13 @@ spring:
         generate-ddl: true
         hibernate:
             ddl-auto: create
+
+    # Multipart Request Configuration
+    servlet:
+      multipart:
+          max-file-size: 10MB
+          max-request-size: 10MB
+
+logging:
+    level:
+        com.amazonaws.util.EC2MetadataUtils: error
