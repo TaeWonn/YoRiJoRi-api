@@ -1,7 +1,6 @@
 package dev.ohjj.yorijori.api.image.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -9,9 +8,11 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+
 @Entity
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "image")
 public class ImageEntity {
 
@@ -38,6 +39,7 @@ public class ImageEntity {
     @Column()
     @ColumnDefault("false")
     private Boolean deleteAt;
+
 
 
     @PrePersist
