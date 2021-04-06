@@ -29,11 +29,11 @@ public class AwsS3ImageService implements ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private String upload(MultipartFile multipartFile, String dirName) throws IOException {
+    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
         Optional<File> convertedFile = convert(multipartFile);
 
         File file = convertedFile.orElseThrow(
-                () -> new IllegalArgumentException(
+                () -> new IllegalArgumentException (
                         String.format("Could Not Converted File to %s", multipartFile.getName()
                         )
                 )
@@ -44,17 +44,17 @@ public class AwsS3ImageService implements ImageService {
 
     private String upload(File uploadFile, String dirName) {
         String fileName = dirName + "/" + uploadFile.getName();
+
         String uploadImageUrl = putS3(uploadFile, fileName);
+
+        log.info("Image Upload Result :: {}", uploadImageUrl);
         removeTempFile(uploadFile);
 
-        ImageEntity imageEntity = ImageEntity.builder()
-                .path(dirName)
-                .fileName(uploadFile.getName())
-                .fileExtension(FileNameUtils.getExtension(uploadFile))
+        ImageEntity imageEntity = new ImageEntity(dirName, uploadFile.getName() );
 
-                .build();
+        imageRepository.save(imageEntity);
 
-        return null;
+        return uploadImageUrl;
     }
 
     private void removeTempFile(File uploadFile) {
@@ -70,7 +70,11 @@ public class AwsS3ImageService implements ImageService {
     }
 
     private Optional<File> convert(MultipartFile file) throws IOException {
-        File convertFile = new File(FileNameUtils.randomFileName());
+        String extension = FileNameUtils.getExtension(file);
+        String fileName = FileNameUtils.randomFileName() + "." + extension;
+
+        File convertFile = new File(fileName);
+
         if(convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {
                 fos.write(file.getBytes());

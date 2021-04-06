@@ -1,0 +1,9 @@
+###
+POST http://localhost:8080/api/image
+Content-Type: multipart/form-data; boundary=Files
+
+--Files
+Content-Disposition: form-data; name="file"; filename="test.jpg"
+
+< ./image/test.jpg
+--Files--

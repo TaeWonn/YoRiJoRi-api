@@ -10,7 +10,8 @@ import java.util.Objects;
 
 
 @Entity
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "image")
@@ -18,34 +19,32 @@ public class ImageEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "seq")
+    private Long seq;
 
-    @Column(length = 100, nullable = false)
+    @Column(name = "path", length = 100, nullable = false)
     private String path;
 
-    @Column(length = 300, nullable = false)
+    @Column(name = "file_name", length = 300, nullable = false)
     private String fileName;
 
-    @Column(length = 10, nullable = false)
-    private String fileExtension;
-
-    @Column(nullable = false)
-    private Byte imageGroup;
-
-    @Column()
+    @Column(name = "reg_date")
     @CreationTimestamp
     private LocalDateTime regDate;
 
-    @Column()
+    @Column(name = "delete_at")
     @ColumnDefault("false")
     private Boolean deleteAt;
-
-
 
     @PrePersist
     public void prePersist() {
         this.regDate = Objects.nonNull(this.regDate) ? this.regDate :LocalDateTime.now();
         this.deleteAt = Objects.nonNull(this.deleteAt) ? this.deleteAt : false;
+    }
+
+    public ImageEntity(String path, String fileName) {
+        this.path = path;
+        this.fileName = fileName;
     }
 
 }

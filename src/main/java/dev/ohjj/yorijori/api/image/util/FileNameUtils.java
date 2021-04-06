@@ -1,8 +1,8 @@
 package dev.ohjj.yorijori.api.image.util;
 
 import com.google.common.io.Files;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -16,7 +16,7 @@ public class FileNameUtils {
         return uuid + "-" + now;
     }
 
-    public static String getExtension(File file) {
-        return Files.getFileExtension(file.getName());
+    public static String getExtension(MultipartFile file) {
+        return Files.getFileExtension(file.getOriginalFilename());
     }
 }
