@@ -1,6 +1,6 @@
-package dev.ohjj.yorijori.api.image.service;
+package dev.ohjj.yorijori.api.image;
 
-import dev.ohjj.yorijori.api.image.util.FileNameUtils;
+import dev.ohjj.yorijori.api.common.utils.FileNameUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;

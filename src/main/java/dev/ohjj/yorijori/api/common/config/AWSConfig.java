@@ -1,4 +1,4 @@
-package dev.ohjj.yorijori.api.image.config;
+package dev.ohjj.yorijori.api.common.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

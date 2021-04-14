@@ -2,6 +2,7 @@ cloud:
   aws:
     s3:
       bucket: ohjj-yorijori
+      url: https://ohjj-yorijori.s3.ap-northeast-2.amazonaws.com/public/
     region:
       static: ap-northeast-2
     stack:

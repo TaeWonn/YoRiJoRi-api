@@ -1,4 +1,4 @@
-package dev.ohjj.yorijori.api.image.entity;
+package dev.ohjj.yorijori.api.persistence.image.entity;
 
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -45,6 +45,10 @@ public class ImageEntity {
     public ImageEntity(String path, String fileName) {
         this.path = path;
         this.fileName = fileName;
+    }
+
+    public static ImageEntity from(String path, String fileName) {
+        return new ImageEntity(path, fileName);
     }
 
 }

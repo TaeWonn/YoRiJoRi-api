@@ -1,12 +1,12 @@
-package dev.ohjj.yorijori.api.image.service;
+package dev.ohjj.yorijori.api.image;
 
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import dev.ohjj.yorijori.api.image.entity.ImageEntity;
-import dev.ohjj.yorijori.api.image.repository.ImageRepository;
-import dev.ohjj.yorijori.api.image.util.FileNameUtils;
+import dev.ohjj.yorijori.api.common.utils.FileNameUtils;
+import dev.ohjj.yorijori.api.controller.request.ImageRequest;
+import dev.ohjj.yorijori.api.persistence.image.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AwsS3ImageService implements ImageService {
+public class AwsS3ImageUploader implements ImageUploader {
 
     private final AmazonS3 client;
     private final ImageRepository imageRepository;
@@ -29,20 +29,28 @@ public class AwsS3ImageService implements ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
-        Optional<File> convertedFile = convert(multipartFile);
+
+    public ImageRequest.Common upload(MultipartFile multipartFile, String dirName) {
+        ImageRequest.Common common = new ImageRequest.Common();
+        Optional<File> convertedFile;
+
+        try {
+            common.setPath(dirName);
+            convertedFile = convert(multipartFile, common);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Fail MultipartFile to File Converted");
+        }
 
         File file = convertedFile.orElseThrow(
                 () -> new IllegalArgumentException (
-                        String.format("Could Not Converted File to %s", multipartFile.getName()
-                        )
+                        String.format("Could Not Converted File to %s", multipartFile.getName())
                 )
         );
 
         return upload(file, dirName);
     }
 
-    private String upload(File uploadFile, String dirName) {
+    private ImageRequest.Common upload(File uploadFile, String dirName) {
         String fileName = dirName + "/" + uploadFile.getName();
 
         String uploadImageUrl = putS3(uploadFile, fileName);
@@ -50,11 +58,7 @@ public class AwsS3ImageService implements ImageService {
         log.info("Image Upload Result :: {}", uploadImageUrl);
         removeTempFile(uploadFile);
 
-        ImageEntity imageEntity = new ImageEntity(dirName, uploadFile.getName() );
-
-        imageRepository.save(imageEntity);
-
-        return uploadImageUrl;
+        return null;
     }
 
     private void removeTempFile(File uploadFile) {
@@ -69,18 +73,21 @@ public class AwsS3ImageService implements ImageService {
         return client.getUrl(bucket, fileName).toString();
     }
 
-    private Optional<File> convert(MultipartFile file) throws IOException {
+    private Optional<File> convert(MultipartFile file, ImageRequest.Common common) throws IOException {
         String extension = FileNameUtils.getExtension(file);
         String fileName = FileNameUtils.randomFileName() + "." + extension;
 
         File convertFile = new File(fileName);
+        common.setFileName(fileName);
 
         if(convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {
                 fos.write(file.getBytes());
             }
+
             return Optional.of(convertFile);
         }
+
         return Optional.empty();
     }
 }
