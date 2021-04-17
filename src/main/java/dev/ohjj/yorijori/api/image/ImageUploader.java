@@ -6,4 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ImageUploader {
     ImageRequest.Common upload(MultipartFile multipartFile, String dirName);
 
+    void remove(String path, String fileName);
+
 }

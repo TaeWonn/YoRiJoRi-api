@@ -1,11 +1,14 @@
 package dev.ohjj.yorijori.api.image;
 
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import dev.ohjj.yorijori.api.common.utils.FileNameUtils;
 import dev.ohjj.yorijori.api.controller.request.ImageRequest;
+import dev.ohjj.yorijori.api.image.exception.MultipartFileConvertException;
 import dev.ohjj.yorijori.api.persistence.image.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,30 +27,40 @@ import java.util.Optional;
 public class AwsS3ImageUploader implements ImageUploader {
 
     private final AmazonS3 client;
-    private final ImageRepository imageRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
 
     public ImageRequest.Common upload(MultipartFile multipartFile, String dirName) {
-        ImageRequest.Common common = new ImageRequest.Common();
         Optional<File> convertedFile;
 
         try {
-            common.setPath(dirName);
-            convertedFile = convert(multipartFile, common);
+            convertedFile = convert(multipartFile);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Fail MultipartFile to File Converted");
+            throw new MultipartFileConvertException("Fail MultipartFile to File Converted");
         }
 
         File file = convertedFile.orElseThrow(
-                () -> new IllegalArgumentException (
+                () -> new MultipartFileConvertException (
                         String.format("Could Not Converted File to %s", multipartFile.getName())
                 )
         );
 
         return upload(file, dirName);
+    }
+
+    public void remove(String path ,String fileName) {
+        String key = path + "/" + fileName;
+
+        try {
+            client.deleteObject(bucket, key);
+        } catch (AmazonServiceException e) {
+            log.info("AmazonServiceException :: fail to delete Object {}", key);
+        } catch (SdkClientException e) {
+            log.info("SdkClientException :: exception for amazonSDK");
+        }
+
     }
 
     private ImageRequest.Common upload(File uploadFile, String dirName) {
@@ -58,7 +71,7 @@ public class AwsS3ImageUploader implements ImageUploader {
         log.info("Image Upload Result :: {}", uploadImageUrl);
         removeTempFile(uploadFile);
 
-        return null;
+        return new ImageRequest.Common(dirName, uploadFile.getName(), uploadImageUrl);
     }
 
     private void removeTempFile(File uploadFile) {
@@ -73,12 +86,11 @@ public class AwsS3ImageUploader implements ImageUploader {
         return client.getUrl(bucket, fileName).toString();
     }
 
-    private Optional<File> convert(MultipartFile file, ImageRequest.Common common) throws IOException {
+    private Optional<File> convert(MultipartFile file) throws IOException {
         String extension = FileNameUtils.getExtension(file);
         String fileName = FileNameUtils.randomFileName() + "." + extension;
 
         File convertFile = new File(fileName);
-        common.setFileName(fileName);
 
         if(convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {

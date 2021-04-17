@@ -1,18 +1,25 @@
 package dev.ohjj.yorijori.api.persistence.image.entity;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "image")
 public class ImageEntity {
@@ -28,19 +35,14 @@ public class ImageEntity {
     @Column(name = "file_name", length = 300, nullable = false)
     private String fileName;
 
-    @Column(name = "reg_date")
-    @CreationTimestamp
+    @Column(name = "reg_date", nullable = false)
     private LocalDateTime regDate;
 
-    @Column(name = "delete_at")
-    @ColumnDefault("false")
-    private Boolean deleteAt;
+    @Column(name = "mod_date", nullable = false)
+    private LocalDateTime modDate;
 
-    @PrePersist
-    public void prePersist() {
-        this.regDate = Objects.nonNull(this.regDate) ? this.regDate :LocalDateTime.now();
-        this.deleteAt = Objects.nonNull(this.deleteAt) ? this.deleteAt : false;
-    }
+    @Column(name = "delete_at", nullable = false)
+    private Boolean deleteAt;
 
     public ImageEntity(String path, String fileName) {
         this.path = path;
@@ -48,7 +50,12 @@ public class ImageEntity {
     }
 
     public static ImageEntity from(String path, String fileName) {
-        return new ImageEntity(path, fileName);
+        final var imageEntity = new ImageEntity(path, fileName);
+        final var now = LocalDateTime.now();
+        imageEntity.regDate = now;
+        imageEntity.modDate = now;
+        imageEntity.deleteAt = false;
+        return imageEntity;
     }
 
 }
