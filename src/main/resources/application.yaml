@@ -16,3 +16,4 @@ spring:
 jasypt:
   encryptor:
       bean: jasyptStringEncryptor
+      key: yorijori
